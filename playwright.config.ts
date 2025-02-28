@@ -9,7 +9,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "https://magento.softwaretestingboard.com/", // process.env.BASE_URL || 'https://magento.softwaretestingboard.com/',
+    baseURL: process.env.BASE_URL || 'https://magento.softwaretestingboard.com/',
     trace: "on-first-retry",
     testIdAttribute: "id",
     screenshot: "only-on-failure",
