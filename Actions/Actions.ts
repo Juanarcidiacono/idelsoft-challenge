@@ -14,7 +14,6 @@ export class Actions extends BasePage {
    * Navigates to the specified URL
    *
    * @param {string} url - URL to navigate to
-   * @param {Object} options - Navigation options (timeout, waitUntil, etc)
    * @returns {Promise<void>}
    */
   async navigate(url: string): Promise<void> {
@@ -24,24 +23,22 @@ export class Actions extends BasePage {
   /**
    * Waits for an element to be visible on the page
    *
-   * @param {string} selector - CSS or XPath selector of the element
-   * @param {number} timeout - Maximum wait time in milliseconds
+   * @param {string} locator - Locator of the element to click
+   * @param {number} [timeout=30000] - Maximum wait time in milliseconds
    * @returns {Promise<Locator>} Element locator
    */
   async waitForElement(
-    selector: string,
+    locator: Locator,
     timeout: number = 30000
   ): Promise<Locator> {
-    const element = this.page.locator(selector);
-    await element.waitFor({ state: "visible", timeout });
-    return element;
+    await locator.waitFor({ state: "visible", timeout });
+    return locator;
   }
 
   /**
    * Clicks on an element
    *
-   * @param {string} selector - CSS or XPath selector of the element
-   * @param {Object} options - Click options (delay, button, modifiers, etc)
+   * @param {Locator} locator - Locator of the element to click
    * @returns {Promise<void>}
    */
   async click(locator: Locator): Promise<void> {
@@ -51,9 +48,8 @@ export class Actions extends BasePage {
   /**
    * Types text into a form element
    *
-   * @param {string} selector - CSS or XPath selector of the element
+   * @param {Locator} locator - Locator of the element to type into
    * @param {string} text - Text to type
-   * @param {Object} options - Typing options (delay, noWaitAfter, etc)
    * @returns {Promise<void>}
    */
   async type(locator: Locator, text: string): Promise<void> {
@@ -63,7 +59,7 @@ export class Actions extends BasePage {
   /**
    * Gets the text of an element
    *
-   * @param {string} selector - CSS or XPath selector of the element
+   * @param {Locator} locator - Locator of the element to get text from
    * @returns {Promise<string>} Element text
    */
   async getText(locator: Locator): Promise<string> {
@@ -73,7 +69,7 @@ export class Actions extends BasePage {
   /**
    * Checks if an element is visible on the page
    *
-   * @param {string} selector - CSS or XPath selector of the element
+   * @param {Locator} locator - Locator of the element to check
    * @returns {Promise<boolean>} true if the element is visible, false otherwise
    */
   async isVisible(locator: Locator): Promise<boolean> {
@@ -83,8 +79,8 @@ export class Actions extends BasePage {
   /**
    * Takes a screenshot of the current page
    *
-   * @param {string} path - Path where to save the screenshot
-   * @param {Object} options - Screenshot options (fullPage, clip, etc)
+   * @param {string} [path] - Path where to save the screenshot
+   * @param {Object} [options={}] - Screenshot options (fullPage, clip, etc)
    * @returns {Promise<Buffer>} Buffer with the captured image
    */
   async takeScreenshot(path?: string, options: any = {}): Promise<Buffer> {
@@ -94,14 +90,11 @@ export class Actions extends BasePage {
   /**
    * Selects an option in a select element
    *
-   * @param {string} selector - CSS or XPath selector of the select element
+   * @param {Locator} locator - Locator of the select element
    * @param {string|string[]} values - Value or values to select
    * @returns {Promise<string[]>} Selected values
    */
   async select(locator: Locator, values: string | string[]): Promise<string[]> {
-    if (!this.page) {
-      throw new Error("Page not initialized. Call newPage() first.");
-    }
     return await locator.selectOption(values);
   }
 
@@ -109,7 +102,7 @@ export class Actions extends BasePage {
    * Waits for a condition to be true on the page
    *
    * @param {Function} predicate - Function that returns a boolean
-   * @param {number} timeout - Maximum wait time in milliseconds
+   * @param {number} [timeout=30000] - Maximum wait time in milliseconds
    * @returns {Promise<void>}
    */
   async waitForCondition(
@@ -141,34 +134,28 @@ export class Actions extends BasePage {
   /**
    * Verifies that an element has certain text
    *
-   * @param {string} selector - CSS or XPath selector of the element
+   * @param {Locator} locator - Locator of the element to check
    * @param {string|RegExp} expected - Expected text or regular expression
-   * @returns {Promise<void>}
+   * @returns {Promise<void>}d
    */
   async expectToHaveText(
     locator: Locator,
     expected: string | RegExp
   ): Promise<void> {
-    if (!this.page) {
-      throw new Error("Page not initialized. Call newPage() first.");
-    }
     await expect(locator).toHaveText(expected);
   }
 
   /**
    * Waits for an element to disappear from the page
    *
-   * @param {string} selector - CSS or XPath selector of the element
-   * @param {number} timeout - Maximum wait time in milliseconds
-   * @returns {Promise<void>}
+   * @param {Locator} locator - Locator of the element to wait for
+   * @param {number} [timeout=30000] - Maximum wait time in milliseconds
+   * @returns {Promise<void>}is not initialized
    */
   async waitForElementToBeHidden(
     locator: Locator,
     timeout: number = 30000
   ): Promise<void> {
-    if (!this.page) {
-      throw new Error("Page not initialized. Call newPage() first.");
-    }
     await locator.waitFor({ state: "hidden", timeout });
   }
 
@@ -176,12 +163,9 @@ export class Actions extends BasePage {
    * Presses a key or key combination
    *
    * @param {string} key - Key or key combination (E.g.: 'Enter', 'Control+A')
-   * @returns {Promise<void>}
+   * @returns {Promise<void>}page is not initialized
    */
   async pressKey(key: string): Promise<void> {
-    if (!this.page) {
-      throw new Error("Page not initialized. Call newPage() first.");
-    }
     await this.page.keyboard.press(key);
   }
 
@@ -197,10 +181,10 @@ export class Actions extends BasePage {
   }
 
   /**
-   * Clicks on a random element from a collection of elements that match the selector
+   * Clicks on a random element from a collection of elements
    *
-   * @param {string} selector - CSS or XPath selector that matches multiple elements
-   * @returns {Promise<number>} - The index of the randomly selected element
+   * @param {Locator} elements - Locator of elements to choose from
+   * @returns {Promise<void>}
    */
   async clickRandom(elements: Locator): Promise<void> {
     const count = await elements.count();

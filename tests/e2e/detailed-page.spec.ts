@@ -1,31 +1,21 @@
 import { test,expect } from "@playwright/test";
-import { HomePage } from "../../pages/HomePage";
 import { Actions } from "../../Actions/Actions";
 import { CommonPage } from "../../pages/CommonPage";
-import { urls } from "../../fixtures/urls.json";
 import { DetailedPage } from "../../pages/DetailedPage";
 import { Utils } from "../../Utils/Utils";
-import { RandomEmailGenerator } from "../../utils/RandomEmailGenerator";
 import { ListingPage } from "../../pages/ListingPage";
 
-import { utimes } from "fs";
-import { equal } from "assert";
-
-let homePage: HomePage;
 let actions: Actions;
 let common: CommonPage;
 let detailedPage: DetailedPage;
 let utils: Utils;
-let email: RandomEmailGenerator;
 let listingPage: ListingPage;
 
 test.beforeEach(async ({ page }) => {
-  homePage = new HomePage(page);
   actions = new Actions(page);
   common = new CommonPage(page);
   detailedPage = new DetailedPage(page);
   utils = new Utils(page);
-  email = new RandomEmailGenerator();
   listingPage = new ListingPage(page);
   await actions.navigate("/");
 });

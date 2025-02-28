@@ -2,7 +2,6 @@ import { test } from "@playwright/test";
 import { HomePage } from "../../pages/HomePage";
 import { Actions } from "../../Actions/Actions";
 import { CommonPage } from "../../pages/CommonPage";
-import { urls } from "../../fixtures/urls.json";
 
 let homePage: HomePage;
 let actions: Actions;
@@ -16,7 +15,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("HomePage", () => {
-    test("should click on a random item", async () => {
-        await actions.clickRandom(homePage.items);
-    });
+  test("verify the Hot Sellers section is visible", async() => {
+    await actions.isVisible(homePage.hotSellersSection)
+  })
 });

@@ -3,26 +3,34 @@ import { RandomEmailGenerator } from "../../utils/RandomEmailGenerator";
 import {
   createUserRequestBody,
   createNewUser,
+  consumerToken,
 } from "../../utils/UserRequestBody";
+import { Actions } from "../../Actions/Actions";
 
 const BASE_URL = "https://magento.softwaretestingboard.com";
 export const CUSTOMERS_ENDPOINT = `${BASE_URL}/rest/default/V1/customers`;
-const TOKEN_ENDPOINT = `${BASE_URL}/rest/default/V1/integration/customer/token`;
+export const TOKEN_ENDPOINT = `${BASE_URL}/rest/default/V1/integration/customer/token`;
 const CUSTOMER_ME_ENDPOINT = `${BASE_URL}/rest/default/V1/customers/me`;
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
 
 let customerPassword: string;
 let validEmail: string;
+let actions: Actions;
 
 test.beforeAll(async () => {
   validEmail = await new RandomEmailGenerator().generateRandomEmail();
   customerPassword = "Password1";
 });
 
+test.beforeEach(({ page }) => {
+  actions = new Actions(page);
+});
+
 test.describe("Magento API Tests", () => {
   test("should create a new user with valid email address", async ({
     request,
   }) => {
+    console.log(validEmail);
     const [response, responseBody] = await createNewUser(
       validEmail,
       customerPassword,
@@ -37,7 +45,10 @@ test.describe("Magento API Tests", () => {
     request,
   }) => {
     const invalidEmail = validEmail.replace("@", "");
-    const requestBody = createUserRequestBody(invalidEmail);
+    const requestBody = await createUserRequestBody(
+      invalidEmail,
+      customerPassword
+    );
 
     const response = await request.post(CUSTOMERS_ENDPOINT, {
       data: requestBody,
@@ -54,7 +65,10 @@ test.describe("Magento API Tests", () => {
   test("should create a new customer account with admin token", async ({
     request,
   }) => {
-    const requestBody = createUserRequestBody(validEmail, customerPassword);
+    const requestBody = await createUserRequestBody(
+      validEmail,
+      customerPassword
+    );
 
     const response = await request.post(CUSTOMERS_ENDPOINT, {
       data: requestBody,
@@ -121,8 +135,7 @@ test.describe("Magento API Tests", () => {
   test("should reject creation of customer with existing email", async ({
     request,
   }) => {
-    await createNewUser(validEmail, customerPassword, request);
-    const requestBody = createUserRequestBody(validEmail, customerPassword);
+    const [,requestBody] = await createNewUser(validEmail, customerPassword, request);
 
     const response = await request.post(CUSTOMERS_ENDPOINT, {
       data: requestBody,
@@ -135,28 +148,33 @@ test.describe("Magento API Tests", () => {
     expect(response.status()).toBe(400);
   });
 
-  test("should delete customer account successfully", async ({ request }) => {
+  test("should retrieve customer information", async ({ request }) => {
     const [createResponse, createResponseBody] = await createNewUser(
       validEmail,
       customerPassword,
       request
     );
-    createUserRequestBody(validEmail, customerPassword);
-    const userIdToDelete = createResponseBody.id;
+
+    const userId = createResponseBody.id;
 
     expect(createResponse.status()).toBe(200);
 
-    const deleteResponse = await request.delete(
-      `${CUSTOMERS_ENDPOINT}/${userIdToDelete}`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${ADMIN_TOKEN}`,
-        },
-      }
+    const customerToken = await consumerToken(
+      validEmail,
+      customerPassword,
+      request
     );
 
-    expect(deleteResponse.status()).toBe(200);
-    expect(await deleteResponse.text()).toBe("true");
+    const response = await request.get(`${CUSTOMER_ME_ENDPOINT}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${customerToken}`,
+      },
+    });
+
+    const responseBody = await response.json();
+
+    expect(response.status()).toBe(200);
+    expect(userId).toBe(responseBody.id);
   });
 });

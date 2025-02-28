@@ -1,6 +1,10 @@
-import { CUSTOMERS_ENDPOINT } from '../tests/api/magneto.spec'; 
+import { expect } from "@playwright/test";
+import { CUSTOMERS_ENDPOINT, TOKEN_ENDPOINT } from "../tests/api/magneto.spec";
 
-export const createUserRequestBody = (email: string, customerPassword: string) => {
+export const createUserRequestBody = async (
+  email: string,
+  customerPassword: string
+) => {
   return {
     customer: {
       email: email,
@@ -29,16 +33,44 @@ export const createUserRequestBody = (email: string, customerPassword: string) =
   };
 };
 
-export const createNewUser = async (validEmail: string, customerPassword: string, request: any) => {
-  const requestBody = createUserRequestBody(validEmail, customerPassword);
+export const createNewUser = async (
+  validEmail: string,
+  customerPassword: string,
+  request: any
+) => {
+  const requestBody = await createUserRequestBody(validEmail, customerPassword);
 
   const response = await request.post(CUSTOMERS_ENDPOINT, {
     data: requestBody,
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
     },
   });
   const responseBody = await response.json();
 
-  return [response, responseBody];
+  return [responseBody,requestBody];
+};
+
+export const consumerToken = async (
+  validEmail: string,
+  customerPassword: string,
+  request: any
+) => {
+  const tokenRequestBody = {
+    username: validEmail,
+    password: customerPassword,
+  };
+
+  const tokenResponse = await request.post(TOKEN_ENDPOINT, {
+    data: tokenRequestBody,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  expect(tokenResponse.status()).toBe(200);
+
+  const customerToken = (await tokenResponse.text()).replace(/"/g, "");
+
+  return customerToken;
 };

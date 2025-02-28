@@ -9,7 +9,6 @@ export class Utils extends BasePage {
         const urls = JSON.parse(data);
         const values = Object.values(urls) as string[];
         const randomIndex = Math.floor(Math.random() * (values.length + 1)) 
-        console.log(randomIndex)
         
         return values[randomIndex];
     }
